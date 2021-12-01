@@ -13,10 +13,18 @@ fn count_increases(depths: &Vec<u32>) -> usize {
         .count()
 }
 
+fn count_window_increases(depths: &Vec<u32>) -> usize {
+    let windepths = zip(zip(depths, &depths[1..]), &depths[2..])
+        .map(|((a, b), c)| a + b + c)
+        .collect();
+    count_increases(&windepths)
+}
+
 fn main() {
     let contents = std::fs::read_to_string("input.txt").expect("file error");
     let depths = parse_depths(&contents);
     println!("Part 1 = {}", count_increases(&depths));
+    println!("Part 2 = {}", count_window_increases(&depths));
 }
 
 #[cfg(test)]
@@ -37,5 +45,6 @@ mod tests {
             263";
         let depths = parse_depths(sample);
         assert_eq!(7, count_increases(&depths));
+        assert_eq!(5, count_window_increases(&depths));
     }
 }
