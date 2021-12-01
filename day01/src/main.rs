@@ -1,18 +1,22 @@
 use itertools::zip;
 
-fn count_increases(input: &str) -> usize {
-    let depths: Vec<u32> = input.split('\n')
+fn parse_depths(input: &str) -> Vec<u32> {
+    input.split('\n')
         .map(|s| s.trim()).filter(|s| s.len() > 0)
         .map(|s| s.parse::<u32>().unwrap())
-        .collect();
-    zip(&depths, &depths[1..])
+        .collect()
+}
+
+fn count_increases(depths: &Vec<u32>) -> usize {
+    zip(depths, &depths[1..])
         .filter(|(a, b)| a < b)
         .count()
 }
 
 fn main() {
     let contents = std::fs::read_to_string("input.txt").expect("file error");
-    println!("Part 1 = {}", count_increases(&contents));
+    let depths = parse_depths(&contents);
+    println!("Part 1 = {}", count_increases(&depths));
 }
 
 #[cfg(test)]
@@ -31,6 +35,7 @@ mod tests {
             269
             260
             263";
-        assert_eq!(7, count_increases(sample));
+        let depths = parse_depths(sample);
+        assert_eq!(7, count_increases(&depths));
     }
 }
