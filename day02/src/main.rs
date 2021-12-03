@@ -16,7 +16,7 @@ fn instruction_to_vec(line: &str) -> Result<Vec2i, String> {
     }
 }
 
-fn run_program(program_str: &str) -> i32 {
+fn run_program_p1(program_str: &str) -> i32 {
     let pos: Vec2i = program_str.split("\n")
         .map(|s| s.trim()).filter(|s| s.len() > 0)
         .map(|l| instruction_to_vec(l).unwrap())
@@ -24,9 +24,30 @@ fn run_program(program_str: &str) -> i32 {
     pos.x * pos.y
 }
 
+fn run_program_p2(program_str: &str) -> i32 {
+    let instructions = program_str.split("\n")
+        .map(|s| s.trim()).filter(|s| s.len() > 0)
+        .map(|l| instruction_to_vec(l).unwrap());
+    let mut aim = Vec2i::new(0, 0);
+    let mut pos = Vec2i::new(0, 0);
+
+    for instruction in instructions {
+        if instruction.y == 0 {
+            // Forward
+            pos += instruction + aim * instruction.x;
+        } else {
+            // Aim adjust
+            aim += instruction;
+        }
+    }
+
+    pos.x * pos.y
+}
+
 fn main() {
     let contents = std::fs::read_to_string("input.txt").expect("file error");
-    println!("Part 1 = {}", run_program(&contents));
+    println!("Part 1 = {}", run_program_p1(&contents));
+    println!("Part 2 = {}", run_program_p2(&contents));
 }
 
 #[cfg(test)]
@@ -49,6 +70,7 @@ mod tests {
             up 3
             down 8
             forward 2";
-        assert_eq!(150, run_program(sample));
+        assert_eq!(150, run_program_p1(sample));
+        assert_eq!(900, run_program_p2(sample));
     }
 }
