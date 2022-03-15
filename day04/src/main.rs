@@ -123,9 +123,37 @@ fn p1_winning_board_score(contents: &str) -> u32 {
     // Even so, this precondition must be asserted on set creation using the set sizes
 }
 
+// Or more precisely: last to win board score
+fn p2_losing_board_score(contents: &str) -> u32 {
+    let (drawn, mut boards) = parse_input(contents);
+    let mut called = HashSet::<u32>::from_iter(drawn.iter().take(BOARD_WIDTH - 1).cloned());
+
+    for num in drawn.iter().skip(BOARD_WIDTH - 1) {
+        called.insert(*num);
+
+        // Have to use old fashion iterating
+        // in order to remove from list while iterating
+        let mut i = 0;
+        while i < boards.len() {
+            if boards[i].is_bingo(&called) {
+                if boards.len() == 1 {
+                    return boards[i].unmarked_sum(&called) * num;
+                } else {
+                    boards.remove(i);
+                }
+            } else {
+                i += 1;
+            }
+        }
+    }
+
+    panic!("Nobody won. Wtf");
+}
+
 fn main() {
     let contents = std::fs::read_to_string("input.txt").expect("file error");
     println!("Part 1 = {}", p1_winning_board_score(&contents));
+    println!("Part 2 = {}", p2_losing_board_score(&contents));
 }
 
 #[cfg(test)]
@@ -159,7 +187,8 @@ mod tests {
         assert_eq!(boards.len(), 3);
         assert_eq!(boards[0].lines.len(), 10);
         assert_eq!(boards[0].lines[5], HashSet::from([22, 8, 21, 6, 1]));
-        let score = p1_winning_board_score(sample);
-        assert_eq!(score, 4512);
+
+        assert_eq!(p1_winning_board_score(sample), 4512);
+        assert_eq!(p2_losing_board_score(sample), 1924);
     }
 }
