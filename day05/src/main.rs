@@ -22,20 +22,22 @@ impl Line {
     }
 
     // Note that this only works for axis aligned lines
-    // Others return None
-    fn aa_direction(&self) -> Option<Vec2i> {
+    // and diagonal lines. Others return None
+    fn direction(&self) -> Option<Vec2i> {
         let diff = self.1 - self.0;
         if diff.x == 0 {
             Some(Vec2i::new(0, diff.y / diff.y.abs()))
         } else if diff.y == 0 {
             Some(Vec2i::new(diff.x / diff.x.abs(), 0))
+        } else if diff.x.abs() == diff.y.abs() {
+            Some(Vec2i::new(diff.x / diff.x.abs(), diff.y / diff.y.abs()))
         } else {
             None
         }
     }
 
     fn trace(&self, touched: &mut HashMap<(i32, i32), usize>) {
-        let dir = self.aa_direction().expect("Trace requires axis-aligned lines");
+        let dir = self.direction().expect("Trace requires axis-aligned or diagonal lines");
         let mut cpos = self.0;
         while cpos != self.1 {
             *touched.entry(cpos.into()).or_insert(0) += 1;
@@ -60,20 +62,29 @@ fn parse_lines(contents: &str) -> Vec<Line> {
         .collect()
 }
 
-fn p1_overlap_aa_lines(lines: &Vec<Line>) -> usize {
+fn count_overlapping_points<'a, I>(lines: I) -> usize
+    where I: Iterator<Item = &'a Line>
+{
     let mut touched = HashMap::<(i32, i32), usize>::new();
     for line in lines {
-        if line.is_axis_aligned() {
-            line.trace(&mut touched);
-        }
+        line.trace(&mut touched);
     }
     touched.values().filter(|v| **v > 1).count()
+}
+
+fn p1_overlap_aa_lines(lines: &Vec<Line>) -> usize {
+    count_overlapping_points(lines.iter().filter(|l| l.is_axis_aligned()))
+}
+
+fn p2_overlap_aa_and_diag_lines(lines: &Vec<Line>) -> usize {
+    count_overlapping_points(lines.iter())
 }
 
 fn main() {
     let contents = std::fs::read_to_string("input.txt").expect("file error");
     let lines = parse_lines(&contents);
     println!("Part 1 = {}", p1_overlap_aa_lines(&lines));
+    println!("Part 2 = {}", p2_overlap_aa_and_diag_lines(&lines));
 }
 
 #[cfg(test)]
@@ -99,5 +110,6 @@ mod tests {
         assert_eq!(lines[9], Line(Vec2i::new(5, 5), Vec2i::new(8, 2)));
 
         assert_eq!(p1_overlap_aa_lines(&lines), 5);
+        assert_eq!(p2_overlap_aa_and_diag_lines(&lines), 12);
     }
 }
