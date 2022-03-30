@@ -26,8 +26,8 @@ fn simulate(mut fish_counts: [usize; 9], days: usize) -> [usize; 9] {
         }
 
         // Each fish spawns a new one when it hits 0.
-        next_counts[6] += fish_counts[0];
-        next_counts[8] += fish_counts[0];
+        next_counts[6] = next_counts[6].checked_add(fish_counts[0]).unwrap();
+        next_counts[8] = next_counts[8].checked_add(fish_counts[0]).unwrap();
 
         fish_counts = next_counts;
     }
@@ -43,6 +43,7 @@ fn p1_simulate_count(input: &str, days: usize) -> usize {
 fn main() {
     let contents = std::fs::read_to_string("input.txt").expect("file error");
     println!("Part 1 = {}", p1_simulate_count(&contents, 80));
+    println!("Part 2 = {}", p1_simulate_count(&contents, 256));
 }
 
 #[cfg(test)]
